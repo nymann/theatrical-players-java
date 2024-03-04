@@ -17,7 +17,6 @@ public class StatementPrinter {
             var play = plays.get(perf.playID);
             var cost = costOfPerformance(perf, play);
 
-            // add volume credits
             volumeCredits = getVolumeCredits(perf, volumeCredits, play);
 
             // print line for this order
@@ -31,7 +30,7 @@ public class StatementPrinter {
 
     private static int getVolumeCredits(Performance perf, int volumeCredits, Play play) {
         volumeCredits += Math.max(perf.audience - 30, 0);
-        if ("comedy".equals(play.type)) volumeCredits += Math.floor(perf.audience / 5);
+        if ("comedy".equals(play.type)) volumeCredits += (int) (double) (perf.audience / 5);
         return volumeCredits;
     }
 
