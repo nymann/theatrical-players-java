@@ -16,13 +16,16 @@ public class StatementPrinter {
         for (var perf : invoice.performances) {
             var play = plays.get(perf.playID);
             var cost = costOfPerformance(perf, play);
-
             volumeCredits = getVolumeCredits(perf, volumeCredits, play);
 
-            // print line for this order
-            result.append(String.format("  %s: %s (%s seats)\n", play.name, frmt.format(cost / 100), perf.audience));
             totalAmount += cost;
         }
+        for (var perf : invoice.performances) {
+            var play = plays.get(perf.playID);
+            var cost = costOfPerformance(perf, play);
+            result.append(String.format("  %s: %s (%s seats)\n", play.name, frmt.format(cost / 100), perf.audience));
+        }
+
         result.append(String.format("Amount owed is %s\n", frmt.format(totalAmount / 100)));
         result.append(String.format("You earned %s credits\n", volumeCredits));
         return result.toString();
