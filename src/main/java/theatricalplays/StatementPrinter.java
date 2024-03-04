@@ -7,19 +7,21 @@ import java.util.Map;
 public class StatementPrinter {
 
     public String print(Invoice invoice, Map<String, Play> plays) {
-        StringBuilder result = new StringBuilder(String.format("Statement for %s\n", invoice.customer));
-
-        NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
-
         var totalAmount = getTotalAmount(invoice, plays);
-        int volumeCredits = getVolumeCredits(invoice, plays);
+        var volumeCredits = getVolumeCredits(invoice, plays);
+
+        return printInvoice(invoice, plays, totalAmount, volumeCredits);
+    }
+
+    private static String printInvoice(Invoice invoice, Map<String, Play> plays, int totalAmount, int volumeCredits) {
+        StringBuilder result = new StringBuilder(String.format("Statement for %s\n", invoice.customer));
+        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
         for (var perf : invoice.performances) {
             var play = plays.get(perf.playID);
             var cost = costOfPerformance(perf, play);
-            result.append(String.format("  %s: %s (%s seats)\n", play.name, frmt.format(cost / 100), perf.audience));
+            result.append(String.format("  %s: %s (%s seats)\n", play.name, format.format(cost / 100), perf.audience));
         }
-
-        result.append(String.format("Amount owed is %s\n", frmt.format(totalAmount / 100)));
+        result.append(String.format("Amount owed is %s\n", format.format(totalAmount / 100)));
         result.append(String.format("You earned %s credits\n", volumeCredits));
         return result.toString();
     }
@@ -38,10 +40,8 @@ public class StatementPrinter {
         int volumeCredits = 0;
         for (var perf : invoice.performances) {
             var play = plays.get(perf.playID);
-            int volumeCredits1 = volumeCredits;
-            volumeCredits1 += Math.max(perf.audience - 30, 0);
-            if ("comedy".equals(play.type)) volumeCredits1 += (int) (double) (perf.audience / 5);
-            volumeCredits = volumeCredits1;
+            volumeCredits += Math.max(perf.audience - 30, 0);
+            if ("comedy".equals(play.type)) volumeCredits += (int) (double) (perf.audience / 5);
         }
         return volumeCredits;
     }
