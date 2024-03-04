@@ -7,19 +7,12 @@ import java.util.Map;
 public class StatementPrinter {
 
     public String print(Invoice invoice, Map<String, Play> plays) {
-        var totalAmount = 0;
-        var volumeCredits = 0;
         StringBuilder result = new StringBuilder(String.format("Statement for %s\n", invoice.customer));
 
         NumberFormat frmt = NumberFormat.getCurrencyInstance(Locale.US);
 
-        for (var perf : invoice.performances) {
-            var play = plays.get(perf.playID);
-            var cost = costOfPerformance(perf, play);
-            volumeCredits = getVolumeCredits(perf, volumeCredits, play);
-
-            totalAmount += cost;
-        }
+        var totalAmount = getTotalAmount(invoice, plays);
+        int volumeCredits = getVolumeCredits(invoice, plays);
         for (var perf : invoice.performances) {
             var play = plays.get(perf.playID);
             var cost = costOfPerformance(perf, play);
@@ -31,9 +24,25 @@ public class StatementPrinter {
         return result.toString();
     }
 
-    private static int getVolumeCredits(Performance perf, int volumeCredits, Play play) {
-        volumeCredits += Math.max(perf.audience - 30, 0);
-        if ("comedy".equals(play.type)) volumeCredits += (int) (double) (perf.audience / 5);
+    private static int getTotalAmount(Invoice invoice, Map<String, Play> plays) {
+        int totalAmount = 0;
+        for (var perf : invoice.performances) {
+            var play = plays.get(perf.playID);
+            var cost = costOfPerformance(perf, play);
+            totalAmount += cost;
+        }
+        return totalAmount;
+    }
+
+    private static int getVolumeCredits(Invoice invoice, Map<String, Play> plays) {
+        int volumeCredits = 0;
+        for (var perf : invoice.performances) {
+            var play = plays.get(perf.playID);
+            int volumeCredits1 = volumeCredits;
+            volumeCredits1 += Math.max(perf.audience - 30, 0);
+            if ("comedy".equals(play.type)) volumeCredits1 += (int) (double) (perf.audience / 5);
+            volumeCredits = volumeCredits1;
+        }
         return volumeCredits;
     }
 
